@@ -72,6 +72,20 @@
       ]
     },
     {
+      "path": "dependency_map",
+      "url": "https://{{ or .JsonData.apiHost \"api.lightstep.com\"}}/public/v0.2/{{ .JsonData.orgName}}/projects/{{ .JsonData.projectName}}/query/dependency_map",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "{{ .SecureJsonData.apiKey }}"
+        },
+        {
+          "name": "Content-Type",
+          "content": "application/json"
+        }
+      ]
+    },
+    {
       "path": "projects",
       "url": "https://{{ or .JsonData.apiHost \"api.lightstep.com\"}}/public/v0.2/{{ .JsonData.orgName}}/projects",
       "headers": [

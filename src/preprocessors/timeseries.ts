@@ -1,6 +1,50 @@
+// NodeGraphDataFrameFieldNames
+
 import { ArrayVector, Field, FieldType, MutableDataFrame } from '@grafana/data';
 import { getTemplateSrv } from '@grafana/runtime';
-import { LightstepQuery, QueryTimeseriesRes } from '../types';
+import { LightstepQuery, QueryTimeseriesRes, QueryEdgeNodesRes } from '../types';
+
+
+/**
+ * Response pre-processor that converts the LS response data into Grafana wide
+ * data frames, eg:
+ *
+ * **Lightstep API response shape**
+ * ```json
+ * {
+ *   "query": {
+ *     "data": {
+ *       "attributes": {
+ *         "series": [
+ *           { "group-labels": ["operation=/get"], "points": [[0,1], [1,7], [2,1]] }
+ *           { "group-labels": ["operation=/load"], "points": [[0,6], [1,5], [2,9]] }
+ *         ]
+ *       }
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * **Grafana DataFrame shape**
+ * ```js
+ * [
+ *   { name: 'Time', type: FieldType.time, values: [0, 1, 2] },
+ *   { name: '{operation="/get"}', type: FieldType.number, values: [1, 7, 1] },
+ *   { name: '{operation="/load"}', type: FieldType.number, values: [6, 5, 9] }
+ * ]
+ * ```
+ */
+// TODO
+export function preprocessNodesEdges(res: QueryEdgeNodesRes, query: LightstepQuery, notebookURL: string) {
+  // const dataFrameFields: Field[] = [
+  //   {} // name: 'Time', type: FieldType.time, values: new ArrayVector(createTimestampMap([0,1])), config: {} },
+  // ];
+
+  return new MutableDataFrame({
+    refId: query.refId,
+    fields: [],
+  });
+}
 
 /**
  * Response pre-processor that converts the LS response data into Grafana wide

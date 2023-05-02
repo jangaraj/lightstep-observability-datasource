@@ -6,7 +6,7 @@ import {
   rangeUtil,
 } from '@grafana/data';
 import { config, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
-import { preprocessData } from './preprocessors';
+import { preprocessData, preprocessServiceMap } from './preprocessors';
 import { LightstepDataSourceOptions, LightstepQuery } from './types';
 
 /**
@@ -52,8 +52,28 @@ export class DataSource extends DataSourceApi<LightstepQuery, LightstepDataSourc
       const notebookURL = createNotebookURL(request, visibleTargets, projectName);
 
       const requests = visibleTargets.map(async (query) => {
-        const res = await getBackendSrv().post(`${this.url}/projects/${query.projectName}/telemetry/query_timeseries`, {
-          data: {
+        var endpoint = ''
+        var data = {}
+        if (query.text.includes('assemble')) {
+          endpoint = 'query/dependency_map'
+          data = {
+            'query-string': getTemplateSrv().replace(query.text, request.scopedVars),
+            'oldest-time': request.range.from,
+            'youngest-time': request.range.to,
+            'include-exemplars': false,
+            'dependency-map-options': {
+                'map-type': 'service',
+                'scope': 'all'
+              }
+          }
+          const res = await getBackendSrv().post(`${this.url}/projects/${query.projectName}/${endpoint}`, {
+            data: data
+          });
+  
+          return preprocessServiceMap(res, query, notebookURL);
+        } else {
+          endpoint = 'telemetry/query_timeseries'
+          data = {
             attributes: {
               query: getTemplateSrv().replace(query.text, request.scopedVars),
               'input-language': query.language,
@@ -66,10 +86,13 @@ export class DataSource extends DataSourceApi<LightstepQuery, LightstepDataSourc
               grafana_version: config.buildInfo.version,
               query_source: 'grafana',
             },
-          },
-        });
-
-        return preprocessData(res, query, notebookURL);
+          }
+          const res = await getBackendSrv().post(`${this.url}/projects/${query.projectName}/${endpoint}`, {
+            data: data
+          });
+  
+          return preprocessData(res, query, notebookURL);
+        }
       });
 
       return {

@@ -47,3 +47,19 @@ export interface QueryTimeseriesRes {
 }
 
 type Point = [timestamp: number, value: number];
+
+export type QueryServiceMapRes = QueryEdgeNodesRes;
+
+export interface QueryEdgeNodesRes {
+  data: {
+    'dependency-map': {
+      nodes: Array<{
+        'service-name': string;
+      }>;
+      edges: Array<{
+        'from': string;
+        'to': string;
+      }>;
+    };
+  };
+}
